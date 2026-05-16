@@ -85,6 +85,22 @@ Replay without confirmation:
 /opt/forcewalker/forcewalker/scripts/fw_replay_latest_bag.sh --yes
 ```
 
+## Recreate This Setup
+
+For a new Jetson Thor or a rebuilt machine, start with:
+
+```bash
+/opt/forcewalker/forcewalker/docs/SETUP_FROM_SCRATCH.md
+```
+
+The helper scripts are:
+
+```bash
+/opt/forcewalker/forcewalker/scripts/fw_install_host_deps.sh
+/opt/forcewalker/forcewalker/scripts/fw_apply_zed_cuda_patch.sh
+/opt/forcewalker/forcewalker/scripts/fw_build_ros_ws.sh
+```
+
 ## CUDA/ZED Build Note
 
 The ZED ROS wrapper is patched locally for Jetson Thor / JetPack 7.1 / CUDA 13.
