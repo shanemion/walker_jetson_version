@@ -1,0 +1,26 @@
+realsense:
+  rs_upward:
+    model: Intel RealSense D435i
+    serial: "052622072229"
+    physical_mount: upward
+    ros_namespace: /rs_upward
+    default_depth_profile: "640x480x30"
+    default_rgb_enabled: false
+    default_imu_enabled: false
+
+  rs_downward:
+    model: Intel RealSense D435i
+    serial: "034422071087"
+    physical_mount: downward
+    ros_namespace: /rs_downward
+    default_depth_profile: "640x480x30"
+    default_rgb_enabled: false
+    default_imu_enabled: false
+
+zed:
+  zed_main:
+    model: zed
+    serial: "13262"
+    physical_mount: main
+    ros_namespace: /zed_main
+    default_profile: "HD720@30"

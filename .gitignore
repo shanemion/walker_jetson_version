@@ -1,0 +1,21 @@
+# Runtime and local machine state
+*.log
+*.tmp
+.env
+.env.*
+
+# Python/cache artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# ROS/runtime outputs
+log/
+build/
+install/
+rosbags/
+
+# Editor state
+.vscode/
+.idea/
+*~

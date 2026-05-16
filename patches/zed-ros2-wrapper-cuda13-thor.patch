@@ -1,0 +1,78 @@
+diff --git a/zed_components/CMakeLists.txt b/zed_components/CMakeLists.txt
+index 9256b45..76c9e35 100644
+--- a/zed_components/CMakeLists.txt
++++ b/zed_components/CMakeLists.txt
+@@ -103,11 +103,34 @@ if(CMAKE_SYSTEM_NAME2 MATCHES "aarch64") # Jetson TX
+     set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
+ endif()
+ 
++# JetPack 7 / CUDA 13 on Jetson Thor installs target libraries under
++# targets/sbsa-linux. CMake 3.28 may find nvcc and the headers but miss
++# libcudart, which prevents creation of the CUDA::cudart imported target.
++set(_fw_cuda13_sbsa_root "/usr/local/cuda-13.0/targets/sbsa-linux")
++set(_fw_cuda13_cudart "${_fw_cuda13_sbsa_root}/lib/libcudart.so")
++if(NOT EXISTS "${_fw_cuda13_cudart}" AND EXISTS "${_fw_cuda13_sbsa_root}/lib/libcudart.so.13")
++  set(_fw_cuda13_cudart "${_fw_cuda13_sbsa_root}/lib/libcudart.so.13")
++endif()
++if(EXISTS "${_fw_cuda13_cudart}")
++  set(CUDA_CUDART "${_fw_cuda13_cudart}" CACHE FILEPATH "CUDA runtime library" FORCE)
++  set(CUDA_cudart_LIBRARY "${_fw_cuda13_cudart}" CACHE FILEPATH "CUDA runtime library" FORCE)
++endif()
++
+ find_package(CUDAToolkit REQUIRED)
+ set(CUDA_INCLUDE_DIRS ${CUDAToolkit_INCLUDE_DIRS})
+ set(CUDA_LIBRARIES CUDA::cudart)
+ set(CUDA_LIBRARY_DIRS ${CUDAToolkit_LIBRARY_DIR})
+ 
++if(NOT TARGET CUDA::cudart AND EXISTS "${_fw_cuda13_cudart}")
++  add_library(CUDA::cudart UNKNOWN IMPORTED)
++  set_target_properties(CUDA::cudart PROPERTIES
++    IMPORTED_LOCATION "${_fw_cuda13_cudart}"
++    INTERFACE_INCLUDE_DIRECTORIES "${_fw_cuda13_sbsa_root}/include"
++  )
++endif()
++unset(_fw_cuda13_cudart)
++unset(_fw_cuda13_sbsa_root)
++
+ set(DEPENDENCIES
+     rclcpp
+     rclcpp_components
+diff --git a/zed_debug/CMakeLists.txt b/zed_debug/CMakeLists.txt
+index bebf5f4..ff7bae3 100644
+--- a/zed_debug/CMakeLists.txt
++++ b/zed_debug/CMakeLists.txt
+@@ -90,11 +90,34 @@ if(CMAKE_SYSTEM_NAME2 MATCHES "aarch64") # Jetson TX
+     set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
+ endif()
+ 
++# JetPack 7 / CUDA 13 on Jetson Thor installs target libraries under
++# targets/sbsa-linux. CMake 3.28 may find nvcc and the headers but miss
++# libcudart, which prevents creation of the CUDA::cudart imported target.
++set(_fw_cuda13_sbsa_root "/usr/local/cuda-13.0/targets/sbsa-linux")
++set(_fw_cuda13_cudart "${_fw_cuda13_sbsa_root}/lib/libcudart.so")
++if(NOT EXISTS "${_fw_cuda13_cudart}" AND EXISTS "${_fw_cuda13_sbsa_root}/lib/libcudart.so.13")
++  set(_fw_cuda13_cudart "${_fw_cuda13_sbsa_root}/lib/libcudart.so.13")
++endif()
++if(EXISTS "${_fw_cuda13_cudart}")
++  set(CUDA_CUDART "${_fw_cuda13_cudart}" CACHE FILEPATH "CUDA runtime library" FORCE)
++  set(CUDA_cudart_LIBRARY "${_fw_cuda13_cudart}" CACHE FILEPATH "CUDA runtime library" FORCE)
++endif()
++
+ find_package(CUDAToolkit REQUIRED)
+ set(CUDA_INCLUDE_DIRS ${CUDAToolkit_INCLUDE_DIRS})
+ set(CUDA_LIBRARIES CUDA::cudart)
+ set(CUDA_LIBRARY_DIRS ${CUDAToolkit_LIBRARY_DIR})
+ 
++if(NOT TARGET CUDA::cudart AND EXISTS "${_fw_cuda13_cudart}")
++  add_library(CUDA::cudart UNKNOWN IMPORTED)
++  set_target_properties(CUDA::cudart PROPERTIES
++    IMPORTED_LOCATION "${_fw_cuda13_cudart}"
++    INTERFACE_INCLUDE_DIRECTORIES "${_fw_cuda13_sbsa_root}/include"
++  )
++endif()
++unset(_fw_cuda13_cudart)
++unset(_fw_cuda13_sbsa_root)
++
+ set(DEPENDENCIES
+     rclcpp
+     rclcpp_components
