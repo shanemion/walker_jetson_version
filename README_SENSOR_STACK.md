@@ -134,3 +134,140 @@ CAMERA REBOOTING
 ```
 
 These warnings indicate USB/ZED stability margin under combined load. The ROS stack has been verified to launch and publish topics, but long recording sessions should monitor these warnings.
+
+
+## Teensy Force/IMU Bench Subsystem
+
+The force/IMU bridge is a separate subsystem from the camera stack. The default camera launch remains unchanged; add the Teensy bridge only when bench testing or recording force/IMU data.
+
+### Bench Wiring
+
+Use 3.3V logic only.
+
+| Teensy 4.1 | Qwiic Mux TCA9548A MAIN |
+| --- | --- |
+| Pin 18 SDA | SDA |
+| Pin 19 SCL | SCL |
+| 3.3V | 3.3V |
+| GND | GND |
+
+Mux port map:
+
+| Mux port | Device | Channel |
+| --- | --- | --- |
+| 0 | SparkFun Qwiic Scale NAU7802 | `left_handle_force`, ATO 100 kg load cell |
+| 1 | SparkFun Qwiic Scale NAU7802 | `right_handle_force`, ATO 100 kg load cell |
+| 2 | SparkFun Qwiic Scale NAU7802 | `left_lower_frame_force`, 200 kg button load cell |
+| 3 | SparkFun Qwiic Scale NAU7802 | `right_lower_frame_force`, 200 kg button load cell |
+| 4-6 | Empty | Reserved |
+| 7 | SparkFun BNO086 Qwiic VR IMU | `/forcewalker/imu` |
+
+Typical load-cell terminal wiring: red to `E+`, black to `E-`, green or blue to `A+`, and white to `A-`.
+
+### Teensy Firmware
+
+Firmware source lives at:
+
+```bash
+/opt/forcewalker/forcewalker/firmware/teensy_force_imu_bridge/teensy_force_imu_bridge.ino
+```
+
+Build it with Arduino IDE or Teensyduino for Teensy 4.1. Install these Arduino libraries before compiling:
+
+- SparkFun Qwiic Scale NAU7802 Arduino Library
+- SparkFun BNO08x Arduino Library
+
+The Teensy prints a short non-JSON startup scan, then streams newline-delimited JSON at `115200` baud. Expected sample shape:
+
+```json
+{"seq":12,"t_us":240000,"force_raw":[123,456,789,1011],"force_valid":[true,true,true,true],"imu":{"valid":true,"q":[1.0,0.0,0.0,0.0],"accel_mps2":[0.0,0.0,9.8],"gyro_radps":[0.0,0.0,0.0]},"status":{"mux_addr":112,"force_present":[true,true,true,true]}}
+```
+
+Test the Teensy alone:
+
+```bash
+python3 -m serial.tools.miniterm /dev/serial/by-id/forcewalker_teensy 115200
+```
+
+If the by-id alias has not been added yet, list available serial devices:
+
+```bash
+ls -l /dev/serial/by-id/
+```
+
+### ROS Bridge
+
+The ROS package is `forcewalker_sensors`. It publishes:
+
+| Topic | Type | Notes |
+| --- | --- | --- |
+| `/forcewalker/force_channels` | `sensor_msgs/JointState` | `position` is raw counts, `effort` is calibrated Newtons |
+| `/forcewalker/imu` | `sensor_msgs/Imu` | Quaternion, acceleration, gyro from BNO086 |
+| `/forcewalker/sensor_diag` | `diagnostic_msgs/DiagnosticArray` | Serial health, packet counters, Teensy `t_us`, channel validity |
+
+Calibration defaults live in:
+
+```bash
+/opt/forcewalker/forcewalker/config/force_calibration.yaml
+```
+
+Build after adding or changing the ROS package:
+
+```bash
+/opt/forcewalker/forcewalker/scripts/fw_build_ros_ws.sh
+```
+
+Run only the Teensy bridge for bench testing:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source /opt/forcewalker/ros2_ws/install/setup.bash
+ros2 launch forcewalker_sensors teensy_force_bridge.launch.py \
+  port:=/dev/serial/by-id/forcewalker_teensy \
+  calib_yaml:=/opt/forcewalker/forcewalker/config/force_calibration.yaml
+```
+
+Or use the tmux helper:
+
+```bash
+/opt/forcewalker/forcewalker/scripts/fw_start_sensors.sh --force-only
+```
+
+Start cameras plus force/IMU:
+
+```bash
+/opt/forcewalker/forcewalker/scripts/fw_start_sensors.sh --with-force
+```
+
+Record a short force/IMU bag:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source /opt/forcewalker/ros2_ws/install/setup.bash
+ros2 bag record -s mcap -o /data/forcewalker/rosbags/fw_force_imu_test \
+  /forcewalker/force_channels \
+  /forcewalker/imu \
+  /forcewalker/sensor_diag
+```
+
+Record cameras plus force/IMU with the helper:
+
+```bash
+/opt/forcewalker/forcewalker/scripts/fw_start_sensors.sh --with-force --record
+```
+
+### Bench Dashboard
+
+Use Foxglove Bridge, already included in the host dependency script:
+
+```bash
+/opt/forcewalker/forcewalker/scripts/fw_start_viewer.sh
+```
+
+Import the starter layout from:
+
+```bash
+/opt/forcewalker/forcewalker/config/foxglove/force_imu_bench_layout.json
+```
+
+The layout plots calibrated force, raw counts, IMU quaternion, and diagnostics. Foxglove can also show topic health and rates from the active ROS connection.

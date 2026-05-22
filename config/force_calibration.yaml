@@ -1,0 +1,28 @@
+channels:
+  - name: left_handle_force
+    mux_port: 0
+    raw_offset: -1701.85
+    scale_N_per_count: 1.0
+    sign: 1.0
+    valid: true
+
+  - name: right_handle_force
+    mux_port: 1
+    raw_offset: 19358.98
+    scale_N_per_count: 1.0
+    sign: 1.0
+    valid: true
+
+  - name: left_lower_frame_force
+    mux_port: 2
+    raw_offset: 19756.27
+    scale_N_per_count: 1.0
+    sign: 1.0
+    valid: true
+
+  - name: right_lower_frame_force
+    mux_port: 3
+    raw_offset: 31083.97
+    scale_N_per_count: 1.0
+    sign: 1.0
+    valid: true

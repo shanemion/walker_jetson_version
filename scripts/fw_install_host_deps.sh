@@ -26,7 +26,9 @@ base_packages=(
   usbutils
   v4l-utils
   python3-pip
+  python3-serial
   python3-venv
+  python3-yaml
   python3-colcon-common-extensions
   python3-rosdep
 )

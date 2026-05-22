@@ -1,0 +1,66 @@
+{
+  "configById": {
+    "Force_channels": {
+      "paths": [
+        "/forcewalker/force_channels.effort[0]",
+        "/forcewalker/force_channels.effort[1]",
+        "/forcewalker/force_channels.effort[2]",
+        "/forcewalker/force_channels.effort[3]"
+      ]
+    },
+    "Raw_counts": {
+      "paths": [
+        "/forcewalker/force_channels.position[0]",
+        "/forcewalker/force_channels.position[1]",
+        "/forcewalker/force_channels.position[2]",
+        "/forcewalker/force_channels.position[3]"
+      ]
+    },
+    "IMU_quaternion": {
+      "paths": [
+        "/forcewalker/imu.orientation.w",
+        "/forcewalker/imu.orientation.x",
+        "/forcewalker/imu.orientation.y",
+        "/forcewalker/imu.orientation.z"
+      ]
+    },
+    "Diagnostics": {
+      "topicPath": "/forcewalker/sensor_diag"
+    }
+  },
+  "globalVariables": {},
+  "layout": {
+    "direction": "row",
+    "first": {
+      "direction": "column",
+      "first": "Force_channels",
+      "second": "Raw_counts",
+      "splitPercentage": 50
+    },
+    "second": {
+      "direction": "column",
+      "first": "IMU_quaternion",
+      "second": "Diagnostics",
+      "splitPercentage": 50
+    },
+    "splitPercentage": 55
+  },
+  "panels": {
+    "Force_channels": {
+      "title": "Force channels, calibrated N",
+      "type": "Plot"
+    },
+    "Raw_counts": {
+      "title": "Force channels, raw counts",
+      "type": "Plot"
+    },
+    "IMU_quaternion": {
+      "title": "IMU quaternion",
+      "type": "Plot"
+    },
+    "Diagnostics": {
+      "title": "Teensy bridge diagnostics",
+      "type": "RawMessages"
+    }
+  }
+}

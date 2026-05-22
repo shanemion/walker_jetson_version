@@ -132,10 +132,21 @@ else
   fail "lsusb command not found"
 fi
 
+if [[ -e /dev/serial/by-id/forcewalker_teensy ]]; then
+  pass "Teensy force/IMU serial alias exists: /dev/serial/by-id/forcewalker_teensy"
+else
+  warn "Teensy force/IMU serial alias not found: /dev/serial/by-id/forcewalker_teensy"
+  if [[ -d /dev/serial/by-id ]]; then
+    info "Available serial by-id devices:"
+    find /dev/serial/by-id -maxdepth 1 -type l -printf 'INFO   %f -> %l\n' 2>/dev/null || true
+  fi
+fi
+
 if have_cmd ros2; then
   check_pkg zed_wrapper
   check_pkg zed_components
   check_pkg realsense2_camera
+  check_pkg forcewalker_sensors
 else
   fail "ros2 command not found after sourcing"
 fi

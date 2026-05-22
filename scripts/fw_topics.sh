@@ -25,7 +25,7 @@ else
 fi
 
 echo "Force Walker sensor topics:"
-topics="$(ros2 topic list 2>/dev/null | grep -E 'zed_main|rs_upward|rs_downward' || true)"
+topics="$(ros2 topic list 2>/dev/null | grep -E 'zed_main|rs_upward|rs_downward|forcewalker' || true)"
 if [[ -z "$topics" ]]; then
   echo "  No matching topics are currently visible."
   exit 0
@@ -36,7 +36,7 @@ echo
 
 hz_candidates="$(
   printf '%s\n' "$topics" \
-    | grep -E '/(image_rect_raw|depth_registered|rgb/color/rect/image)$' \
+    | grep -E '/(image_rect_raw|depth_registered|rgb/color/rect/image|force_channels|imu)$' \
     | grep -v -E '/(compressed|compressedDepth|theora|zstd)' \
     || true
 )"
