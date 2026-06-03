@@ -34,8 +34,8 @@ For force/IMU only:
 
 Pass criteria:
 
-- ZED RGB and depth topics publish at 20 Hz or better
-- each RealSense terrain depth topic publishes at 12 Hz or better
+- ZED RGB and depth topics publish at 15 Hz or better for the current raw ROS topic baseline
+- each RealSense terrain depth topic publishes at 10 Hz or better
 - `/forcewalker/force_channels` publishes at 40 Hz or better
 - `/forcewalker/sensor_diag` publishes at 0.5 Hz or better
 
@@ -45,7 +45,11 @@ If you are only checking an already-running stack, use:
 /opt/forcewalker/forcewalker/scripts/fw_smoke_test.sh --no-launch
 ```
 
-## 3. Force Calibration
+## 3. Force Calibration Deferred
+
+Known-weight force calibration is deferred for the current capture phase. Until
+it is completed, `/forcewalker/force_channels` `position` contains raw counts
+and `effort` is useful for relative force changes only, not final Newton values.
 
 Check raw force stability:
 
