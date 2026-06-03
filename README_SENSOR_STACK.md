@@ -55,6 +55,12 @@ Check connected hardware and ROS package visibility:
 /opt/forcewalker/forcewalker/scripts/fw_check_sensors.sh
 ```
 
+Run a full camera plus force/IMU smoke test:
+
+```bash
+/opt/forcewalker/forcewalker/scripts/fw_smoke_test.sh
+```
+
 List active Force Walker topics:
 
 ```bash
@@ -83,6 +89,18 @@ Replay without confirmation:
 
 ```bash
 /opt/forcewalker/forcewalker/scripts/fw_replay_latest_bag.sh --yes
+```
+
+Record a labeled timed trial:
+
+```bash
+/opt/forcewalker/forcewalker/scripts/fw_record_trial.sh --label walking_pass_01 --duration 60
+```
+
+The capture runbook is:
+
+```bash
+/opt/forcewalker/forcewalker/docs/DATA_CAPTURE_RUNBOOK.md
 ```
 
 ## Recreate This Setup
@@ -209,6 +227,14 @@ Calibration defaults live in:
 
 ```bash
 /opt/forcewalker/forcewalker/config/force_calibration.yaml
+```
+
+Sample raw force channels, zero unloaded offsets, and scale one channel:
+
+```bash
+/opt/forcewalker/forcewalker/scripts/fw_force_calibrate.py sample --duration 5
+/opt/forcewalker/forcewalker/scripts/fw_force_calibrate.py zero --duration 5 --write
+/opt/forcewalker/forcewalker/scripts/fw_force_calibrate.py scale --channel left_handle_force --weight-lb 20.4 --duration 5 --write
 ```
 
 Build after adding or changing the ROS package:

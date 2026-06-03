@@ -7,7 +7,7 @@ FW_SETUP="/opt/forcewalker/ros2_ws/install/setup.bash"
 ROSBAG_DIR="/data/forcewalker/rosbags"
 
 usage() {
-  printf 'Usage: %s [--record] [--with-force] [--force-only]\n' "$(basename "$0")"
+  printf 'Usage: %s [--record] [--with-force] [--force-only] [--no-attach] [--bag-label LABEL]\n' "$(basename "$0")"
   printf '\n'
   printf 'Bench force/IMU only:\n'
   printf '  %s --force-only\n' "$(basename "$0")"
@@ -19,6 +19,8 @@ usage() {
 RECORD=0
 WITH_FORCE=0
 FORCE_ONLY=0
+NO_ATTACH=0
+BAG_LABEL=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --record)
@@ -33,6 +35,18 @@ while [[ $# -gt 0 ]]; do
       WITH_FORCE=1
       FORCE_ONLY=1
       shift
+      ;;
+    --no-attach)
+      NO_ATTACH=1
+      shift
+      ;;
+    --bag-label)
+      if [[ $# -lt 2 ]]; then
+        echo "--bag-label requires a value" >&2
+        exit 2
+      fi
+      BAG_LABEL="$2"
+      shift 2
       ;;
     -h|--help)
       usage
@@ -68,6 +82,11 @@ fi
 mkdir -p "$ROSBAG_DIR"
 
 if tmux has-session -t "$SESSION" 2>/dev/null; then
+  if [[ "$NO_ATTACH" -eq 1 ]]; then
+    echo "tmux session '$SESSION' already exists."
+    echo "Attach with: tmux attach -t $SESSION"
+    exit 0
+  fi
   echo "tmux session '$SESSION' already exists; attaching."
   exec tmux attach -t "$SESSION"
 fi
@@ -75,6 +94,14 @@ fi
 common_prefix="source $ROS_SETUP && source $FW_SETUP"
 teensy_port="${FORCEWALKER_TEENSY_PORT:-/dev/serial/by-id/forcewalker_teensy}"
 force_calib="${FORCEWALKER_FORCE_CALIB:-/opt/forcewalker/forcewalker/config/force_calibration.yaml}"
+
+safe_bag_label=""
+if [[ -n "$BAG_LABEL" ]]; then
+  safe_bag_label="$(printf '%s' "$BAG_LABEL" | tr -cs 'A-Za-z0-9_.-' '_' | sed 's/^_*//; s/_*$//')"
+  if [[ -n "$safe_bag_label" ]]; then
+    safe_bag_label="_$safe_bag_label"
+  fi
+fi
 
 zed_cmd="$common_prefix && ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed camera_name:=zed_main serial_number:=13262 param_overrides:='general.grab_resolution:=HD720;general.grab_frame_rate:=30'"
 
@@ -103,11 +130,11 @@ fi
 if [[ "$RECORD" -eq 1 ]]; then
   stamp="$(date +%Y%m%d_%H%M%S)"
   if [[ "$FORCE_ONLY" -eq 1 ]]; then
-    record_cmd="$common_prefix && ros2 bag record -s mcap -o $ROSBAG_DIR/fw_force_imu_$stamp /forcewalker/force_channels /forcewalker/imu /forcewalker/sensor_diag"
+    record_cmd="$common_prefix && ros2 bag record -s mcap -o $ROSBAG_DIR/fw_force_imu_$stamp$safe_bag_label /forcewalker/force_channels /forcewalker/imu /forcewalker/sensor_diag"
   elif [[ "$WITH_FORCE" -eq 1 ]]; then
-    record_cmd="$common_prefix && ros2 bag record -s mcap -o $ROSBAG_DIR/fw_sensors_$stamp /zed_main/zed_node/rgb/color/rect/image /zed_main/zed_node/rgb/color/rect/camera_info /zed_main/zed_node/depth/depth_registered /zed_main/zed_node/depth/depth_registered/camera_info /rs_upward/rs_upward/depth/image_rect_raw /rs_upward/rs_upward/depth/camera_info /rs_downward/rs_downward/depth/image_rect_raw /rs_downward/rs_downward/depth/camera_info /forcewalker/force_channels /forcewalker/imu /forcewalker/sensor_diag"
+    record_cmd="$common_prefix && ros2 bag record -s mcap -o $ROSBAG_DIR/fw_sensors_$stamp$safe_bag_label /zed_main/zed_node/rgb/color/rect/image /zed_main/zed_node/rgb/color/rect/camera_info /zed_main/zed_node/depth/depth_registered /zed_main/zed_node/depth/depth_registered/camera_info /rs_upward/rs_upward/depth/image_rect_raw /rs_upward/rs_upward/depth/camera_info /rs_downward/rs_downward/depth/image_rect_raw /rs_downward/rs_downward/depth/camera_info /forcewalker/force_channels /forcewalker/imu /forcewalker/sensor_diag"
   else
-    record_cmd="$common_prefix && ros2 bag record -s mcap -o $ROSBAG_DIR/fw_sensors_$stamp /zed_main/zed_node/rgb/color/rect/image /zed_main/zed_node/rgb/color/rect/camera_info /zed_main/zed_node/depth/depth_registered /zed_main/zed_node/depth/depth_registered/camera_info /rs_upward/rs_upward/depth/image_rect_raw /rs_upward/rs_upward/depth/camera_info /rs_downward/rs_downward/depth/image_rect_raw /rs_downward/rs_downward/depth/camera_info"
+    record_cmd="$common_prefix && ros2 bag record -s mcap -o $ROSBAG_DIR/fw_sensors_$stamp$safe_bag_label /zed_main/zed_node/rgb/color/rect/image /zed_main/zed_node/rgb/color/rect/camera_info /zed_main/zed_node/depth/depth_registered /zed_main/zed_node/depth/depth_registered/camera_info /rs_upward/rs_upward/depth/image_rect_raw /rs_upward/rs_upward/depth/camera_info /rs_downward/rs_downward/depth/image_rect_raw /rs_downward/rs_downward/depth/camera_info"
   fi
   tmux new-window -t "$SESSION" -n rosbag "$record_cmd"
 fi
@@ -117,4 +144,12 @@ if [[ "$FORCE_ONLY" -eq 1 ]]; then
 else
   tmux select-window -t "$SESSION:zed_main"
 fi
+
+if [[ "$NO_ATTACH" -eq 1 ]]; then
+  echo "Started tmux session '$SESSION'."
+  echo "Attach with: tmux attach -t $SESSION"
+  echo "Stop with: tmux kill-session -t $SESSION"
+  exit 0
+fi
+
 exec tmux attach -t "$SESSION"
