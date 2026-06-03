@@ -11,6 +11,7 @@ LABEL="trial"
 DURATION=60
 MODE="full"
 KEEP_RUNNING=0
+ROSBAG_STOP_TIMEOUT=30
 
 usage() {
   cat <<EOF
@@ -68,6 +69,44 @@ cleanup() {
 }
 trap cleanup EXIT
 
+latest_bag_dir() {
+  local label_pattern="$1"
+  local latest_mcap
+
+  latest_mcap="$(
+    find "$BAG_ROOT" -mindepth 2 -maxdepth 2 -type f -name "*.mcap" -path "*${label_pattern}*" -printf '%T@ %p\n' 2>/dev/null \
+      | sort -n \
+      | tail -1 \
+      | cut -d' ' -f2-
+  )"
+
+  if [[ -n "$latest_mcap" ]]; then
+    dirname "$latest_mcap"
+    return 0
+  fi
+  return 1
+}
+
+wait_for_rosbag_metadata() {
+  local label_pattern="$1"
+  local bag_dir=""
+
+  for _ in $(seq 1 "$ROSBAG_STOP_TIMEOUT"); do
+    bag_dir="$(latest_bag_dir "$label_pattern" || true)"
+    if [[ -n "$bag_dir" && -f "$bag_dir/metadata.yaml" ]]; then
+      printf '%s\n' "$bag_dir"
+      return 0
+    fi
+    sleep 1
+  done
+
+  if [[ -n "$bag_dir" ]]; then
+    printf '%s\n' "$bag_dir"
+    return 1
+  fi
+  return 1
+}
+
 if [[ ! -f "$ROS_SETUP" ]]; then
   echo "Missing ROS setup: $ROS_SETUP" >&2
   exit 1
@@ -79,6 +118,7 @@ fi
 
 mkdir -p "$ROS_LOG_DIR" "$BAG_ROOT"
 export ROS_LOG_DIR
+safe_label="$(printf '%s' "$LABEL" | tr -cs 'A-Za-z0-9_.-' '_' | sed 's/^_*//; s/_*$//')"
 
 case "$MODE" in
   force)
@@ -107,6 +147,15 @@ if [[ "$KEEP_RUNNING" -eq 1 ]]; then
 fi
 
 sleep "$DURATION"
+
+if tmux list-windows -t "$SESSION" -F '#W' 2>/dev/null | grep -qx rosbag; then
+  echo "Stopping rosbag recorder gracefully..."
+  tmux send-keys -t "$SESSION:rosbag" C-c 2>/dev/null || true
+  bag_dir="$(wait_for_rosbag_metadata "$safe_label" || true)"
+else
+  bag_dir="$(latest_bag_dir "$safe_label" || true)"
+fi
+
 tmux kill-session -t "$SESSION" 2>/dev/null || true
 trap - EXIT
 
@@ -115,19 +164,11 @@ if [[ -f "$FW_SETUP" ]]; then
   source_setup "$FW_SETUP"
 fi
 
-latest_mcap="$(
-  find "$BAG_ROOT" -mindepth 2 -maxdepth 2 -type f -name '*.mcap' -printf '%T@ %p\n' 2>/dev/null \
-    | sort -n \
-    | tail -1 \
-    | cut -d' ' -f2-
-)"
-
-if [[ -z "$latest_mcap" ]]; then
-  echo "No MCAP file found under $BAG_ROOT" >&2
+if [[ -z "${bag_dir:-}" ]]; then
+  echo "No MCAP bag directory found under $BAG_ROOT for label '$LABEL'" >&2
   exit 1
 fi
 
-bag_dir="$(dirname "$latest_mcap")"
 metadata_file="$bag_dir/forcewalker_trial_metadata.txt"
 {
   echo "label: $LABEL"
