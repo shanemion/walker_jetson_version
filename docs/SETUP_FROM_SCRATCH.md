@@ -142,8 +142,8 @@ These are intentionally not automated here:
 
 | ROS name | Device | Serial | Baseline |
 | --- | --- | --- | --- |
-| `zed_main` | Stereolabs ZED USB | `13262` | HD720 @ 30 FPS |
-| `rs_upward` | Intel RealSense D435i | `052622072229` | depth only, 640x480 @ 30 FPS |
-| `rs_downward` | Intel RealSense D435i | `034422071087` | depth only, 640x480 @ 30 FPS |
+| `zed_main` | Stereolabs ZED USB | `13262` | VGA grab @ 60 FPS, RGBD publish @ 20 FPS |
+| `rs_upward` | Intel RealSense D435i | `052622072229` | depth only, 640x480 @ 15 FPS |
+| `rs_downward` | Intel RealSense D435i | `034422071087` | depth only, 640x480 @ 15 FPS |
 
 Do not change names or serials unless the physical rig inventory changes.

@@ -4,7 +4,7 @@ realsense:
     serial: "052622072229"
     physical_mount: upward
     ros_namespace: /rs_upward
-    default_depth_profile: "640x480x30"
+    default_depth_profile: "640x480x15"
     default_rgb_enabled: false
     default_imu_enabled: false
 
@@ -13,7 +13,7 @@ realsense:
     serial: "034422071087"
     physical_mount: downward
     ros_namespace: /rs_downward
-    default_depth_profile: "640x480x30"
+    default_depth_profile: "640x480x15"
     default_rgb_enabled: false
     default_imu_enabled: false
 
@@ -23,4 +23,4 @@ zed:
     serial: "13262"
     physical_mount: main
     ros_namespace: /zed_main
-    default_profile: "HD720@30"
+    default_profile: "VGA grab @ 60, RGBD publish @ 20"

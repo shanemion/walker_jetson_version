@@ -165,8 +165,8 @@ else
   require_topic "/forcewalker/sensor_diag"
   sample_hz "/zed_main/zed_node/rgb/color/rect/image" 20
   sample_hz "/zed_main/zed_node/depth/depth_registered" 20
-  sample_hz "/rs_upward/rs_upward/depth/image_rect_raw" 20
-  sample_hz "/rs_downward/rs_downward/depth/image_rect_raw" 20
+  sample_hz "/rs_upward/rs_upward/depth/image_rect_raw" 12
+  sample_hz "/rs_downward/rs_downward/depth/image_rect_raw" 12
   sample_hz "/forcewalker/force_channels" 40
   sample_hz "/forcewalker/sensor_diag" 0.5
 fi

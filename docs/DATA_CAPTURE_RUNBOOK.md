@@ -35,7 +35,7 @@ For force/IMU only:
 Pass criteria:
 
 - ZED RGB and depth topics publish at 20 Hz or better
-- each RealSense depth topic publishes at 20 Hz or better
+- each RealSense terrain depth topic publishes at 12 Hz or better
 - `/forcewalker/force_channels` publishes at 40 Hz or better
 - `/forcewalker/sensor_diag` publishes at 0.5 Hz or better
 

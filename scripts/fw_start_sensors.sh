@@ -103,11 +103,11 @@ if [[ -n "$BAG_LABEL" ]]; then
   fi
 fi
 
-zed_cmd="$common_prefix && ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed camera_name:=zed_main serial_number:=13262 param_overrides:='general.grab_resolution:=HD720;general.grab_frame_rate:=30'"
+zed_cmd="$common_prefix && ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed camera_name:=zed_main serial_number:=13262 param_overrides:='general.grab_resolution:=VGA;general.grab_frame_rate:=60;general.pub_resolution:=NATIVE;general.pub_frame_rate:=20.0;video.enable_24bit_output:=true;depth.depth_mode:=PERFORMANCE;depth.depth_stabilization:=0;depth.openni_depth_mode:=true;depth.publish_point_cloud:=false;pos_tracking.pos_tracking_enabled:=false;pos_tracking.publish_tf:=false;pos_tracking.publish_map_tf:=false'"
 
-rs_upward_cmd="$common_prefix && ros2 launch realsense2_camera rs_launch.py camera_name:=rs_upward camera_namespace:=rs_upward serial_no:=\"'_052622072229'\" enable_depth:=true depth_module.depth_profile:=640,480,30 enable_color:=false enable_infra:=false enable_infra1:=false enable_infra2:=false enable_gyro:=false enable_accel:=false enable_motion:=false pointcloud.enable:=false align_depth.enable:=false"
+rs_upward_cmd="$common_prefix && ros2 launch realsense2_camera rs_launch.py camera_name:=rs_upward camera_namespace:=rs_upward serial_no:=\"'_052622072229'\" enable_depth:=true depth_module.depth_profile:=640,480,15 enable_color:=false enable_infra:=false enable_infra1:=false enable_infra2:=false enable_gyro:=false enable_accel:=false enable_motion:=false pointcloud.enable:=false align_depth.enable:=false"
 
-rs_downward_cmd="$common_prefix && ros2 launch realsense2_camera rs_launch.py camera_name:=rs_downward camera_namespace:=rs_downward serial_no:=\"'_034422071087'\" enable_depth:=true depth_module.depth_profile:=640,480,30 enable_color:=false enable_infra:=false enable_infra1:=false enable_infra2:=false enable_gyro:=false enable_accel:=false enable_motion:=false pointcloud.enable:=false align_depth.enable:=false"
+rs_downward_cmd="$common_prefix && ros2 launch realsense2_camera rs_launch.py camera_name:=rs_downward camera_namespace:=rs_downward serial_no:=\"'_034422071087'\" enable_depth:=true depth_module.depth_profile:=640,480,15 enable_color:=false enable_infra:=false enable_infra1:=false enable_infra2:=false enable_gyro:=false enable_accel:=false enable_motion:=false pointcloud.enable:=false align_depth.enable:=false"
 
 force_cmd="$common_prefix && ros2 launch forcewalker_sensors teensy_force_bridge.launch.py port:=$teensy_port calib_yaml:=$force_calib"
 

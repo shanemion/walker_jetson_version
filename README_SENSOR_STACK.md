@@ -19,9 +19,9 @@ The stack publishes one Stereolabs ZED USB camera and two Intel RealSense D435i 
 
 | ROS name | Device | Serial | Baseline |
 | --- | --- | --- | --- |
-| `zed_main` | Stereolabs ZED USB camera | `13262` | HD720 @ 30 FPS |
-| `rs_upward` | Intel RealSense D435i | `052622072229` | Depth only, 640x480 @ 30 FPS |
-| `rs_downward` | Intel RealSense D435i | `034422071087` | Depth only, 640x480 @ 30 FPS |
+| `zed_main` | Stereolabs ZED USB camera | `13262` | VGA grab @ 60 FPS, RGBD publish @ 20 FPS |
+| `rs_upward` | Intel RealSense D435i | `052622072229` | Depth only, 640x480 @ 15 FPS |
+| `rs_downward` | Intel RealSense D435i | `034422071087` | Depth only, 640x480 @ 15 FPS |
 
 RealSense RGB and IMU streams are disabled by default to keep the baseline conservative.
 
